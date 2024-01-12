@@ -1,0 +1,448 @@
+<!-- livebook:{"app_settings":{"output_type":"rich","slug":"peer-map-generator","zero_downtime":true},"autosave_interval_s":60,"file_entries":[{"name":"peer_map_file.xlsx","type":"attachment"}]} -->
+
+# Generate Peer Map from Spreadsheet
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.2"},
+  {:faker, "~> 0.17.0"},
+  {:kino_vega_lite, "~> 0.1.10"},
+  {:xlsx_reader, "~> 0.7.0"}
+])
+```
+
+## Reading from Excel spreadsheet
+
+```elixir
+defmodule Graphing.Spreadsheet do
+  def open_spreadsheet_file(file_location) do
+    {:ok, package} =
+      XlsxReader.open(file_location, supported_custom_formats: [{}])
+
+    package
+  end
+
+  def read_all_worksheets(xlsx_data_payload) do
+    {:ok, data} =
+      XlsxReader.sheets(xlsx_data_payload,
+        except: "Configuration",
+        skip_row?: fn [column | _] -> column == :expect_chars or column == "" end,
+        empty_rows: false,
+        blank_value: "",
+        number_type: Integer
+      )
+
+    data
+  end
+
+  def get_payload(data_payload, worksheet) do
+    [
+      {"People", [_people_headers | people_list]},
+      {"Groupings", [_grouping_headers | groupings_list]},
+      {"Relationships", [_relationship_headers | relationships_list]} | _
+    ] = data_payload
+
+    case worksheet do
+      "People" -> people_list
+      "Groupings" -> groupings_list
+      "Relationships" -> relationships_list
+      _ -> people_list
+    end
+  end
+end
+```
+
+```elixir
+defmodule Person do
+  defstruct id: 0, name: "", dob: "", belongs_to_subgraph: []
+end
+```
+
+```elixir
+defmodule Graphing.People do
+  defp contained_by_to_list(contained_by_string) when is_bitstring(contained_by_string) do
+    contained_by_string
+    |> to_string()
+    |> String.trim()
+    |> String.split("|")
+    |> Enum.filter(fn i -> i != "" end)
+    |> Enum.map(fn i -> String.to_integer(i) end)
+  end
+
+  def parse_people(people_list) when is_list(people_list) do
+    people_list
+    |> Enum.map(fn [id, name, surname, contained_by, dob | _] ->
+      %Person{
+        id: String.to_integer(id),
+        name: name <> " " <> surname,
+        dob: dob,
+        belongs_to_subgraph: contained_by_to_list(contained_by)
+      }
+    end)
+  end
+
+  def top_level_people(people_list) when is_list(people_list) do
+    people_list
+    |> Enum.filter(fn i ->
+      Map.get(i, :belongs_to_subgraph) == []
+    end)
+  end
+
+  def contained_people(people_list) when is_list(people_list) do
+    people_list
+    |> Enum.filter(fn i ->
+      is_list(Map.get(i, :belongs_to_subgraph)) and
+        length(Map.get(i, :belongs_to_subgraph)) > 0
+    end)
+  end
+
+  def people_contained_by(people_list, container_id)
+      when is_list(people_list) and is_integer(container_id) do
+    people_list
+    |> Enum.filter(fn i ->
+      Enum.member?(Map.get(i, :belongs_to_subgraph), container_id)
+    end)
+  end
+end
+```
+
+```elixir
+defmodule Subgraph do
+  defstruct id: 0, title: "", children: [], people: []
+end
+```
+
+```elixir
+defmodule Graphing.SubgraphReader do
+  def top_level_subgraphs(subgraph_list) when is_list(subgraph_list) do
+    subgraph_list |> Enum.filter(fn [_id, _title, contained_by] -> contained_by == 0 end)
+  end
+
+  def child_subgraphs(subgraph_list) when is_list(subgraph_list) do
+    subgraph_list |> Enum.filter(fn [_id, _title, contained_by] -> contained_by > 0 end)
+  end
+
+  def subgraphs(subgraph_list, id) when is_list(subgraph_list) and is_integer(id) do
+    subgraph_list |> Enum.filter(fn [_id, _title, contained_by] -> contained_by == id end)
+  end
+end
+```
+
+```elixir
+defmodule Graphing.Subgraphs.Tree do
+  def construct_subgraph_tree(subgraph_list, people_list \\ [])
+      when is_list(subgraph_list) and is_list(people_list) do
+    do_construct_subgraph_tree(subgraph_list, subgraph_list, people_list, [], 0)
+  end
+
+  defp do_construct_subgraph_tree(_full_subgraph_list, [], _people_list, acc, _parent_id), do: acc
+
+  defp do_construct_subgraph_tree(
+         full_subgraph_list,
+         [[id, title, contained_by] | tail],
+         people_list,
+         acc,
+         parent_id
+       )
+       when contained_by == parent_id do
+    do_construct_subgraph_tree(
+      full_subgraph_list,
+      tail,
+      people_list,
+      [
+        %Subgraph{
+          id: id,
+          title: title,
+          children:
+            do_construct_subgraph_tree(
+              full_subgraph_list,
+              Graphing.SubgraphReader.subgraphs(full_subgraph_list, id),
+              people_list,
+              [],
+              id
+            ),
+          people: Graphing.People.people_contained_by(people_list, id)
+        }
+        | acc
+      ],
+      parent_id
+    )
+  end
+
+  defp do_construct_subgraph_tree(
+         full_subgraph_list,
+         [[_id, _title, _contained_by] | tail],
+         people_list,
+         acc,
+         parent_id
+       ) do
+    do_construct_subgraph_tree(full_subgraph_list, tail, people_list, acc, parent_id)
+  end
+end
+```
+
+```elixir
+defmodule Relationship do
+  defstruct source_id: 0,
+            source_link: :open_link,
+            destination_id: 0,
+            destination_link: :open_link,
+            description: ""
+end
+```
+
+```elixir
+defmodule Graphing.Relationships do
+  def construct_relationship_tree(relationship_list) when is_list(relationship_list) do
+    do_construct_relationship_tree(relationship_list, [])
+  end
+
+  defp do_construct_relationship_tree([], acc), do: acc
+
+  defp do_construct_relationship_tree(
+         [[source_id, destination_id, source_link, destination_link, description] | tail],
+         acc
+       ) do
+    source_link =
+      case source_link do
+        "Open (no arrow)" -> :open_link
+        "Arrow" -> :arrow
+        "Dotted" -> :dotted
+        "Dotted arrow" -> :dotted_arrow
+        "Thick" -> :thick
+        "Thick arrow" -> :thick_arrow
+        "Circular node at end" -> :circular_terminator
+        "X at end" -> :x_terminator
+        _ -> :open_link
+      end
+
+    destination_link =
+      case destination_link do
+        "Open (no arrow)" -> :open_link
+        "Arrow" -> :arrow
+        "Dotted" -> :dotted
+        "Dotted arrow" -> :dotted_arrow
+        "Thick" -> :thick
+        "Thick arrow" -> :thick_arrow
+        "Circular node at end" -> :circular_terminator
+        "X at end" -> :x_terminator
+        _ -> :open_link
+      end
+
+    do_construct_relationship_tree(tail, [
+      %Relationship{
+        source_id: source_id,
+        destination_id: destination_id,
+        source_link: source_link,
+        destination_link: destination_link,
+        description: description
+      }
+      | acc
+    ])
+  end
+end
+```
+
+```elixir
+defmodule Graphing.DataTree do
+  def construct_graph_tree(data_payload) when is_list(data_payload) do
+    [
+      {"People", [_people_headers | people_list]},
+      {"Groupings", [_grouping_headers | groupings_list]},
+      {"Relationships", [_relationship_headers | relationships_list]} | _
+    ] = data_payload
+
+    people_tree = Graphing.People.parse_people(people_list)
+
+    %{
+      people: people_tree,
+      subgraphs:
+        Graphing.Subgraphs.Tree.construct_subgraph_tree(
+          groupings_list,
+          people_tree
+        ),
+      relationships: Graphing.Relationships.construct_relationship_tree(relationships_list)
+    }
+  end
+end
+```
+
+```elixir
+defmodule Graphing.Mermaid do
+  def generate_mermaid_from_tree(data_tree) when is_map(data_tree) do
+    [
+      Graphing.Mermaid.generate_mermaid_chart_preamble(),
+      Graphing.Mermaid.generate_mermaid_from_people(data_tree.people),
+      Graphing.Mermaid.generate_mermaid_from_subgraphs(data_tree.subgraphs),
+      Graphing.Mermaid.generate_mermaid_from_relationships(data_tree.relationships)
+    ]
+    |> Enum.join(";")
+  end
+
+  def generate_mermaid_chart_preamble(direction \\ "TD") do
+    "flowchart #{direction}"
+  end
+
+  def generate_mermaid_from_people(people_list) when is_list(people_list) do
+    for person <- people_list do
+      %Person{id: id, name: name, dob: dob} = person
+      "#{to_string(id)}([\"`#{name}<br>#{Calendar.strftime(dob, "%d/%m/%Y")}`\"])"
+    end
+    |> Enum.join(";")
+  end
+
+  defp relationship_source_link(source_link) when is_atom(source_link) do
+    case source_link do
+      :arrow -> "<--"
+      _ -> "--"
+    end
+  end
+
+  defp relationship_destination_link(destination_link) when is_atom(destination_link) do
+    case destination_link do
+      :arrow -> "-->"
+      _ -> "---"
+    end
+  end
+
+  def generate_mermaid_from_relationships(relationship_list) when is_list(relationship_list) do
+    for relationship <- relationship_list do
+      %Relationship{
+        source_id: source_id,
+        source_link: source_link,
+        destination_id: destination_id,
+        destination_link: destination_link,
+        description: description
+      } = relationship
+
+      case description do
+        "" ->
+          "#{source_id} #{relationship_destination_link(destination_link)} #{destination_id}"
+
+        _ ->
+          "#{source_id}#{relationship_source_link(source_link)} \"`#{description}`\" #{relationship_destination_link(destination_link)}#{destination_id}"
+      end
+    end
+    |> Enum.join(";")
+  end
+
+  def generate_mermaid_from_subgraphs(subgraph_list) when is_list(subgraph_list) do
+    do_mermaid_from_subgraph(subgraph_list, [])
+    |> do_flatten_mermaid_subgraph
+    |> do_filter_mermaid_subgraph
+    |> do_join_mermaid_subgraph
+  end
+
+  defp do_flatten_mermaid_subgraph(""), do: nil
+
+  defp do_flatten_mermaid_subgraph(subgraph_list) when is_list(subgraph_list) do
+    List.flatten(subgraph_list)
+  end
+
+  defp do_filter_mermaid_subgraph(subgraph_list) when is_nil(subgraph_list), do: nil
+
+  defp do_filter_mermaid_subgraph(subgraph_list) when is_list(subgraph_list) do
+    Enum.filter(subgraph_list, fn i -> i != "" end)
+  end
+
+  defp do_join_mermaid_subgraph(subgraph_list) when is_nil(subgraph_list), do: nil
+
+  defp do_join_mermaid_subgraph(subgraph_list) when is_list(subgraph_list) do
+    Enum.join(subgraph_list, " ")
+  end
+
+  def do_mermaid_from_subgraph([], []), do: ""
+  def do_mermaid_from_subgraph([], acc), do: acc
+
+  def do_mermaid_from_subgraph(
+        [
+          %Subgraph{
+            id: id,
+            title: title,
+            children: children_list,
+            people: people_list
+          }
+          | tail
+        ],
+        acc
+      ) do
+    do_mermaid_from_subgraph(tail, [
+      "subgraph #{id} [\"`#{title}`\"];",
+      Graphing.Mermaid.do_mermaid_from_subgraph(children_list, []),
+      Graphing.Mermaid.generate_mermaid_subgraph_people(people_list),
+      "end " | acc
+    ])
+  end
+
+  def generate_mermaid_subgraph_people(people_list) when is_list(people_list) do
+    people_mermaid =
+      for person <- people_list do
+        %Person{id: id} = person
+        "#{to_string(id)}"
+      end
+      |> Enum.join(";")
+
+    case people_mermaid do
+      "" -> ""
+      _ -> people_mermaid <> ";"
+    end
+  end
+end
+```
+
+## Generating the Mermaid Graph
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+input_spreadsheet = Kino.Input.file("Please select your input spreadsheet")
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+value = Kino.Input.read(input_spreadsheet)
+```
+
+```elixir
+Kino.Markdown.new("""
+### Instructions for use
+
+1. Select your file above
+1. Click the '_play_' button that appears in the bottom right-hand corner to generate the diagram
+1. Immediately below these instructions, you will quickly see a draft diagram drawn; check all information is presented and correct
+1. Underneath the diagram, you will see the chart code. Copy this code in its entirety, this will generate your diagram
+""")
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+mermaid_graph =
+  case value do
+    nil ->
+      nil
+
+    _ ->
+      Kino.Input.file_path(value.file_ref)
+      |> Graphing.Spreadsheet.open_spreadsheet_file()
+      |> Graphing.Spreadsheet.read_all_worksheets()
+      |> Graphing.DataTree.construct_graph_tree()
+      |> Graphing.Mermaid.generate_mermaid_from_tree()
+  end
+```
+
+## Mermaid graph generator
+
+```elixir
+case mermaid_graph do
+  nil -> nil
+  _ -> Kino.Mermaid.new(mermaid_graph)
+end
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+Kino.Markdown.new(mermaid_graph)
+```
