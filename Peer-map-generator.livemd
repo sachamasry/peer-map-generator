@@ -1,4 +1,4 @@
-<!-- livebook:{"app_settings":{"output_type":"rich","slug":"peer-map-generator","zero_downtime":true},"autosave_interval_s":60,"file_entries":[{"name":"peer_map_file.xlsx","type":"attachment"}]} -->
+<!-- livebook:{"app_settings":{"output_type":"rich","slug":"peer-map-generator","zero_downtime":true},"autosave_interval_s":60,"file_entries":[{"name":"peer_map_file.xlsx","type":"attachment"}],"persist_outputs":true} -->
 
 # Generate Peer Map from Spreadsheet
 
@@ -10,6 +10,48 @@ Mix.install([
   {:xlsx_reader, "~> 0.7.0"}
 ])
 ```
+
+## Synopsis
+
+This small application reads an `.xlsx` formatted spreadsheet, generating a [Mermaid](https://mermaid.js.org/) diagram. The default Mermaid diagram is displayed in the app as a visual verification tool, helping ensure all the data is present—and correct—in the input spreadhseet. Additionally, the program displays the code defining the diagram, which can be copied into any tool which understands Mermaid flowchart definitions, such as [Draw.io](https://www.drawio.com/).
+
+The nodes and relationships are automatically laid out by Mermaid's algorithms, this however is often not really presentable, especially in diagrams with many entities. This is where Draw.io helps, as you can import this code into the program and graphically manipulate its flowchart elements and relationships, laying out, grouping and styling it in an aesthetically-pleasing and presentable way.
+
+## Background and motivation
+
+The drive for this solution came from the need to easily create and present _peer maps_, visual diagrams presenting groups of teenagers, their relationships and interactions, to identify individuals at risk, and come up with a strategy to help them.
+
+Despite information existing in various records—databases, spreadsheets, and other documents—it is difficult to spot deep patterns in raw data. Humans are excellent at manipulating objects and making new inferences from visual data, which is why peer mapping is used as a tool to help identify where help is needed. Flowcharting and diagramming software exists to provide a common visual language to manipulate, then share information.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Why not build a diagram manually?
+
+While it is easy to build a flowchart in any diagramming software program—including Draw.io—the work needed to create the flowchart with all the data needed is extremely tedious and quite error-prone. For example, a medium-complexity diagram involving only a dozen people, a few locations, each with one relationship or interaction, and several _groupings_, will demand much copying (and pasting):
+
+<!-- livebook:{"break_markdown":true} -->
+
+* $12\times2=24$ facts for entities: twelve people or places, two facts per entity, e.g. name and age
+* $3\times3=9$ facts for groupings: incidents, places (street, estates, schools), gangs or affiliations, with three facts per group, e.g. title, comments, objects belonging to groups
+* $16\times2=32$ facts for relationships and incidents: how people are related to each other, with comments, who was involved in incidents with description, date and place
+
+<!-- livebook:{"break_markdown":true} -->
+
+This example showss that a diagram built by hand needs 65 facts copied from some source data, then pasted into the diagram, needing at least 130 interactions (once to copyŵand the second time to paste), ignoring context-switching, searching and other tasks. All of this is needed just to _place_ the information on the canvas, _before_ it is rearranged and styled for presentation, a process which can easily take half an hour as it is reasonable to expect at most two copy and paste operations in a minute. The result is one single diagram, when several may be required. Clearly, the cost of doing this manually is rather high and should be automated, where possible.
+
+<!-- livebook:{"break_markdown":true} -->
+
+By co-locating all the relevant data into a spreadsheet, using automation to build up a _bases- diagram, all the described tedium can be avoided. It is important to note that much of this information already exists in spreadsheets, so preparing the needed spreadsheet shouldn't take very much time. Once it is ready, this Livebook can read and convert the data into a structured form to help construct a diagram. This diagram is a starting point, with all the facts already inserted, ready and waiting to be styled.
+
+## The process
+
+Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
+
+This Livebook acts as a very simple web application to use to select the input spreadsheet and generate the data needed for a flowchart. When run as an application, it presents a minimalist user interface, asking for the input spreadsheet's location.
+
+<!-- livebook:{"break_markdown":true} -->
+
+
 
 ## Reading from Excel spreadsheet
 
