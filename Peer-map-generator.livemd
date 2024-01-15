@@ -45,13 +45,13 @@ By co-locating all the relevant data into a spreadsheet, using automation to bui
 
 ## The process
 
-This Livebook acts as a very simple web application, used to select the input spreadsheet and generate the data needed for a flowchart. When run, it presents a minimalist user interface, asking only for the input spreadsheet's location.
+This Livebook acts as a simple web application, used to select the input spreadsheet and generate the data needed for a flowchart. When run, it presents a minimalist user interface, asking only for the input spreadsheet's location, generating a diagram from the data.
 
 <!-- livebook:{"break_markdown":true} -->
 
-The process expected here is that a complying spreadsheet is created, opened and read inside this Livebook, and the resulting automatic Mermaid diagram inspected. One of the principal benefits of a Mermaid diagram is delegating layout to the software. Mermaid can produce a good layout with a simple diagram, especially one with few relationships, but is unsuitable for any large or complex data sets. For this reason, the automatically-generated diagram is nothing more than a way to check that all information has been read and included correctly. If anything is seen to be wrong at this stage, corrections should be made in the spreadsheet and the process repeated, until the diagram shows all desired data.
+The process begins with the creation of a complying spreadsheet, which is opened, read, and parsed inside this Livebook, presenting the resultant Mermaid diagram for inspection. One of the principal benefits of Mermaid diagrams is delegating layout decisions to the software. Mermaid can produce a good layout with a simple diagram, especially one with few relationships, but is unsuitable for any large or complex data sets. For this reason, the automatically-generated diagram is nothing more than a way to check that all information has been read and included correctly. If anything is seen to be wrong at this stage, corrections need to be made in the spreadsheet, and the process repeated until the diagram shows all desired data. One benefit of this step is that no time is wasted on constant layout or stylistic changes, only on the correctness of the data.
 
-See the flowchart below for a graphical representation of the steps in the process.
+The flowchart below shows the steps in the process.
 
 ```elixir
 Kino.Mermaid.new("""
@@ -94,17 +94,21 @@ flowchart TD
 
 Once the diagram shows all the expected data, copy the diagram-defining code displayed underneath, and import that into a blank diagram in Draw.io: click on the 'Insert' button in the menu bar (`+` icon) `>` select `Advanced` `>` select the `Mermaid` option. Delete any text in the text box, paste the copied diagram definition and click `Insert`. You will see a newly created diagram on the canvas.
 
-Now that all the data has been converted into a diagram, all that needs to be done is to create a layout adhering to the accepted in-house style, where all the people and relationships have been placed in a way that presents information in a grouped way. This is not an objective process, needing to be done in a way that stimulates discussion and pattern-recognition, to aid drawing impactful conclusions from the data.
+Now that all the data has been converted into a diagram, all that remains to be done is to create a layout adhering to the accepted in-house style, where all the people and relationships have been placed in a way that presents information in a grouped way. This is a subjective process, the _best_ layour will stimulate discussion and pattern-recognition, to help all involved in drawing impactful conclusions from the data.
+
+<!-- livebook:{"break_markdown":true} -->
+
+The reasoning that led to the design of this process was to get the best of both worlds: a first phase leaving layout decisions to the software until all the information was provably correct and complete, followed by the flexibility needed for presenting the case at hand. In this manner, no time is misspent on tedious copying and pasting in the initial stages, or on endlessly tinkering with layout, followed by unconstrained felxibility in the construction of a useful layout without concern for data inaccuracies, as this has already been approved at a previous step.
 
 <!-- livebook:{"break_markdown":true} -->
 
 ### Going further
 
-Draw.io is free and open-source software, and is very powerful, in which it is possible to create powerful diagrams. Even though it is widely used, often it is only the more well-known commercial competitors that are available at an institution, with which practitioners have more experience.
+Draw.io is free and open-source software, and is very powerful, making it possible to create powerful diagrams. Even though it is widely used, often it is only the more well-known commercial competitors that are available at an institution, with which practitioners have more experience and training.
 
-Some popular, commercial diagramming software is able to import Draw.io files (`.drawio` extension), and these can be a good substitute for Draw.io in the steps above. [Lucidchart](https://lucidchart.com) is one example of excellent diagramming software. Following the above step of importing the Mermaid chart into Draw.io, save the diagram to a file, then import the new `.drawio` file into Lucidchart, to do the layout and final styling of the diagram in Lucidchart exclusively.
+Some popular commercial diagramming programs are able to import Draw.io files (`.drawio` extension), and these can be a good substitute for Draw.io in the steps above. [Lucidchart](https://lucidchart.com) is one example of excellent, widely-used commercial diagramming software. Following the above step of importing the Mermaid chart into Draw.io, save the diagram to a Draw.io file, then import that `.drawio` file into Lucidchart, to do the layout and final styling of the diagram in Lucidchart exclusively. This is a good workflow, as Lucidchart has an excellent user interface, many shape libraries to communicate with, it is very slick to use, providing many styling options for attractive diagrams.
 
-## Reading from Excel spreadsheet
+## Reading from an Excel spreadsheet
 
 Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
 
