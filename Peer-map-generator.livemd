@@ -41,9 +41,48 @@ This example showss that a diagram built by hand needs 65 facts copied from some
 
 <!-- livebook:{"break_markdown":true} -->
 
-By co-locating all the relevant data into a spreadsheet, using automation to build up a _bases- diagram, all the described tedium can be avoided. It is important to note that much of this information already exists in spreadsheets, so preparing the needed spreadsheet shouldn't take very much time. Once it is ready, this Livebook can read and convert the data into a structured form to help construct a diagram. This diagram is a starting point, with all the facts already inserted, ready and waiting to be styled.
+By co-locating all the relevant data into a spreadsheet, using automation to build up a _base_ diagram, much tedium can be avoided. It is important to note that this information already exists in spreadsheets, so that preparing the data according to a template shouldn't take very much time. Once it is ready, this Livebook can read and convert the data into a structured form to help construct a diagram. This diagram is a starting point, with all the facts already inserted, ready and waiting to be styled.
 
 ## The process
+
+```elixir
+Kino.Mermaid.new("""
+flowchart TD
+  A[Prepare spreadsheet]
+  B[Run this Livebook]
+  DIACHECK{Is all data <br />on the diagram <br />and correct?}
+  C[Copy generated <br />diagram code]
+  D[Import into Draw.io]
+  E[Lay out and style <br />diagram for presentation]
+  
+  A--Open spreadsheet for reading <br />in Livebook app-->B
+  B--Check automatically <br />generated diagram-->DIACHECK
+  DIACHECK--Yes-->C
+  DIACHECK--No-->A
+  C-->D
+  D-->E
+""")
+```
+
+<!-- livebook:{"output":true} -->
+
+```mermaid
+flowchart TD
+  A[Prepare spreadsheet]
+  B[Run this Livebook]
+  DIACHECK{Is all data <br />on the diagram <br />and correct?}
+  C[Copy generated <br />diagram code]
+  D[Import into Draw.io]
+  E[Lay out and style <br />diagram for presentation]
+  
+  A--Open spreadsheet for reading <br />in Livebook app-->B
+  B--Check automatically <br />generated diagram-->DIACHECK
+  DIACHECK--Yes-->C
+  DIACHECK--No-->A
+  C-->D
+  D-->E
+
+```
 
 Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
 
