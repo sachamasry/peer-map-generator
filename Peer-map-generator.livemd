@@ -45,6 +45,14 @@ By co-locating all the relevant data into a spreadsheet, using automation to bui
 
 ## The process
 
+This Livebook acts as a very simple web application, used to select the input spreadsheet and generate the data needed for a flowchart. When run, it presents a minimalist user interface, asking only for the input spreadsheet's location.
+
+<!-- livebook:{"break_markdown":true} -->
+
+The process expected here is that a complying spreadsheet is created, opened and read inside this Livebook, and the resulting automatic Mermaid diagram inspected. One of the principal benefits of a Mermaid diagram is delegating layout to the software. Mermaid can produce a good layout with a simple diagram, especially one with few relationships, but is unsuitable for any large or complex data sets. For this reason, the automatically-generated diagram is nothing more than a way to check that all information has been read and included correctly. If anything is seen to be wrong at this stage, corrections should be made in the spreadsheet and the process repeated, until the diagram shows all desired data.
+
+See the flowchart below for a graphical representation of the steps in the process.
+
 ```elixir
 Kino.Mermaid.new("""
 flowchart TD
@@ -84,15 +92,21 @@ flowchart TD
 
 ```
 
-Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
+Once the diagram shows all the expected data, copy the diagram-defining code displayed underneath, and import that into a blank diagram in Draw.io: click on the 'Insert' button in the menu bar (`+` icon) `>` select `Advanced` `>` select the `Mermaid` option. Delete any text in the text box, paste the copied diagram definition and click `Insert`. You will see a newly created diagram on the canvas.
 
-This Livebook acts as a very simple web application to use to select the input spreadsheet and generate the data needed for a flowchart. When run as an application, it presents a minimalist user interface, asking for the input spreadsheet's location.
+Now that all the data has been converted into a diagram, all that needs to be done is to create a layout adhering to the accepted in-house style, where all the people and relationships have been placed in a way that presents information in a grouped way. This is not an objective process, needing to be done in a way that stimulates discussion and pattern-recognition, to aid drawing impactful conclusions from the data.
 
 <!-- livebook:{"break_markdown":true} -->
 
+### Going further
 
+Draw.io is free and open-source software, and is very powerful, in which it is possible to create powerful diagrams. Even though it is widely used, often it is only the more well-known commercial competitors that are available at an institution, with which practitioners have more experience.
+
+Some popular, commercial diagramming software is able to import Draw.io files (`.drawio` extension), and these can be a good substitute for Draw.io in the steps above. [Lucidchart](https://lucidchart.com) is one example of excellent diagramming software. Following the above step of importing the Mermaid chart into Draw.io, save the diagram to a file, then import the new `.drawio` file into Lucidchart, to do the layout and final styling of the diagram in Lucidchart exclusively.
 
 ## Reading from Excel spreadsheet
+
+Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
 
 ```elixir
 defmodule Graphing.Spreadsheet do
