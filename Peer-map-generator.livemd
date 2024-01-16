@@ -13,9 +13,9 @@ Mix.install([
 
 ## Synopsis
 
-This small application reads an `.xlsx` formatted spreadsheet, generating a [Mermaid](https://mermaid.js.org/) diagram. The default Mermaid diagram is displayed in the app as a visual verification tool, helping ensure all the data is present—and correct—in the input spreadhseet. Additionally, the program displays the code defining the diagram, which can be copied into any tool which understands Mermaid flowchart definitions, such as [Draw.io](https://www.drawio.com/).
+This small application reads an Excel (`.xlsx`-formatted) spreadsheet, generating a [Mermaid](https://mermaid.js.org/) diagram. The diagram is displayed in the app as a visual verification tool, providing a way to ensure that all the data is present and correct in the input spreadsheet. Entities and relationships are automatically laid out by Mermaid algorithms, taking the tedium out of creating a diagram from the ground up. However—regardless of the cleverness of the software—the results are often not presentable to contextual safeguarding practitioners, as the information is not organised in a way to help _humans_ deduce meaning from the information.
 
-The nodes and relationships are automatically laid out by Mermaid's algorithms, this however is often not really presentable, especially in diagrams with many entities. This is where Draw.io helps, as you can import this code into the program and graphically manipulate its flowchart elements and relationships, laying out, grouping and styling it in an aesthetically-pleasing and presentable way.
+In addition to the diagram, the program displays the generated Mermaid diagram definition. This can be imported into any tool that understands Mermaid flowchart definitions, such as [Draw.io](https://www.drawio.com/). In Draw.io, the diagram can be manually laid out in a way to better communicate the information to practitioners, following the organisation's visual language standards and their in-house style guides. This is where Draw.io really shines, as you can graphically manipulate all flowchart elements and their relationships, laying out, grouping and styling it in an aesthetically-pleasing and presentable way.
 
 ## Background and motivation
 
