@@ -1,4 +1,4 @@
-<!-- livebook:{"app_settings":{"output_type":"rich","slug":"peer-map-generator","zero_downtime":true},"autosave_interval_s":60,"file_entries":[{"name":"peer_map_file.xlsx","type":"attachment"}],"persist_outputs":true} -->
+<!-- livebook:{"app_settings":{"output_type":"rich","slug":"peer-map-generator","zero_downtime":true},"autosave_interval_s":60,"file_entries":[{"name":"Peer_Map_template_spreadsheet.xlsx","type":"attachment"}],"persist_outputs":true} -->
 
 # Generate Peer Map from Spreadsheet
 
@@ -19,7 +19,7 @@ In addition to the diagram, the program displays the generated Mermaid diagram d
 
 ## Background and motivation
 
-The drive for this solution came from the need to easily create and present _peer maps_, visual diagrams presenting groups of teenagers, their relationships and interactions, to identify individuals at risk, and come up with a strategy to help them.
+The drive for this solution came from the need to easily create and present _peer maps_, visual diagrams presenting groups of teenagers, their relationships and interactions, helping to identify individuals at risk, and formulate a strategy to help them.
 
 Despite information existing in various records—databases, spreadsheets, and other documents—it is difficult to spot deep patterns in raw data. Humans are excellent at manipulating objects and making new inferences from visual data, which is why peer mapping is used as a tool to help identify where help is needed. Flowcharting and diagramming software exists to provide a common visual language to manipulate, then share information.
 
@@ -110,7 +110,11 @@ Some popular commercial diagramming programs are able to import Draw.io files (`
 
 ## Reading from an Excel spreadsheet
 
-Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, and an easy and structured data source for a program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
+Spreadsheets are a commonly-used tool, and are the simplest way for practitioners to enter data in preparation for peer mapping, as well as an easy and structured data source for our program to read from. Within the spreadsheet, _worksheets_ act as two-dimensional tables, storing records of people, their relationships and interactions to be mapped.
+
+<!-- livebook:{"break_markdown":true} -->
+
+The spreadsheet has _People_ worksheet, designed to hold names of the teenagers involved—_whom_ we are including in the peer map. The next worksheet is called _Groupings_, defining any groups we want the people to be defined in, e.g. family units, gangs, locations, connected with some incident, etc. Finally, there is the _Relationships_ worksheet, defining both relationships between the adolescents, as well as connecting them in incidents known to the safeguarding practitioners. A template spreadsheet is linked to this Livebook, serving as the starting point for new peer mapping exercises.
 
 ```elixir
 defmodule Graphing.Spreadsheet do
