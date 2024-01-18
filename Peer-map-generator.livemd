@@ -55,40 +55,68 @@ The flowchart below shows the steps in the process.
 
 ```elixir
 Kino.Mermaid.new("""
+%%{ init: { 'flowchart': { 'curve': 'cardinal' } } }%%
 flowchart TD
-  A[Prepare spreadsheet]
-  B[Run this Livebook]
-  DIACHECK{Is all data <br />on the diagram <br />and correct?}
-  C[Copy generated <br />diagram code]
-  D[Import into Draw.io]
-  E[Lay out and style <br />diagram for presentation]
+  A[\\Prepare spreadsheet/]:::manual
+  INPUT[/Open spreadsheet in Livebook app/]:::input
+  B[Run this Livebook]:::step
+  OUTPUT[\\Diagram is generated & diagram definition displayed\\]:::output
+  DIACHECK{Is all data <br />present in the diagram <br />and correct?}:::decision
+  C[Copy generated <br />diagram code]:::step
+  D[Import into Draw.io]:::step
+  E[\\Lay out and style diagram for <br />presentation purposes/]:::manual
   
-  A--Open spreadsheet for reading <br />in Livebook app-->B
-  B--Check automatically <br />generated diagram-->DIACHECK
+  A-->INPUT
+  INPUT-->B
+  B-->OUTPUT
+  OUTPUT--Check <br />generated diagram-->DIACHECK
   DIACHECK--Yes-->C
-  DIACHECK--No-->A
+  DIACHECK-.No.->A
   C-->D
   D-->E
+
+  classDef manual fill:#88c0d066,stroke:#88c0d0,color:#2e3440
+  classDef input fill:#5e81ac99,stroke:#5e81ac,color:#ffffff
+  classDef decision fill:#d0877055,stroke:#d08770,color:#3b4252
+  classDef output fill:#b48eadaa,stroke:#b48ead,color:#ffffff
+  classDef step fill:#81a1c155,stroke:#b48ead,color:#2e3440
+
+  linkStyle 0,1,2,3,4,6,7 stroke:#b48ead,stroke-width: 3px
+  linkStyle 5 stroke:#bf616a,stroke-width:4px,color:#bf616a
 """)
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```mermaid
+%%{ init: { 'flowchart': { 'curve': 'cardinal' } } }%%
 flowchart TD
-  A[Prepare spreadsheet]
-  B[Run this Livebook]
-  DIACHECK{Is all data <br />on the diagram <br />and correct?}
-  C[Copy generated <br />diagram code]
-  D[Import into Draw.io]
-  E[Lay out and style <br />diagram for presentation]
+  A[\Prepare spreadsheet/]:::manual
+  INPUT[/Open spreadsheet in Livebook app/]:::input
+  B[Run this Livebook]:::step
+  OUTPUT[\Diagram is generated & diagram definition displayed\]:::output
+  DIACHECK{Is all data <br />present in the diagram <br />and correct?}:::decision
+  C[Copy generated <br />diagram code]:::step
+  D[Import into Draw.io]:::step
+  E[\Lay out and style diagram for <br />presentation purposes/]:::manual
   
-  A--Open spreadsheet for reading <br />in Livebook app-->B
-  B--Check automatically <br />generated diagram-->DIACHECK
+  A-->INPUT
+  INPUT-->B
+  B-->OUTPUT
+  OUTPUT--Check <br />generated diagram-->DIACHECK
   DIACHECK--Yes-->C
-  DIACHECK--No-->A
+  DIACHECK-.No.->A
   C-->D
   D-->E
+
+  classDef manual fill:#88c0d066,stroke:#88c0d0,color:#2e3440
+  classDef input fill:#5e81ac99,stroke:#5e81ac,color:#ffffff
+  classDef decision fill:#d0877055,stroke:#d08770,color:#3b4252
+  classDef output fill:#b48eadaa,stroke:#b48ead,color:#ffffff
+  classDef step fill:#81a1c155,stroke:#b48ead,color:#2e3440
+
+  linkStyle 0,1,2,3,4,6,7 stroke:#b48ead,stroke-width: 3px
+  linkStyle 5 stroke:#bf616a,stroke-width:4px,color:#bf616a
 
 ```
 
@@ -114,11 +142,13 @@ Spreadsheets are a commonly-used tool, and are the simplest way for practitioner
 
 <!-- livebook:{"break_markdown":true} -->
 
+### Spreadsheet specification
+
 The spreadsheet has _People_ worksheet, designed to hold names of the teenagers involved—_whom_ we are including in the peer map. The next worksheet is called _Groupings_, defining any groups we want the people to be defined in, e.g. family units, gangs, locations, connected with some incident, etc. Finally, there is the _Relationships_ worksheet, defining both relationships between the adolescents, as well as connecting them in incidents known to the safeguarding practitioners. A template spreadsheet is linked to this Livebook, serving as the starting point for new peer mapping exercises.
 
 <!-- livebook:{"break_markdown":true} -->
 
-There are three specifications which are relevant to keep in the spreadsheet. The _People_ worksheet is expected to contain the following columns:
+There are three specifications which must be met by the spreadsheet. The _People_ worksheet is expected to contain the following columns:
 
 1. `Reference` as the first column, serving as a unique identifier for each child
 2. `First name` and `Surname` (or `Last name`) as second and third columns; the column heading is not important
@@ -134,6 +164,26 @@ The _Groupings_ worksheet exists to name any kind of grouping we need to place t
 1. `Reference` the first column must contain some kind of unique identifier not repeated elsewhere
 2. `Title` as the second column, naming this group
 3. `Contained by` as the third column, specifying that this group belongs within another group. If used, this needs to be the unique identifier, or reference, of the parent group.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Finally, the _Relationships_ worsheet is where relationships between the children need to be defined. This is also where incidents are recorded. By design, the relationships are directional, presenting a relationship _from_ a person, _to_ a person. If no direction is intended, this can be handled by removing the arrow from the relationship connecting the two children. Also, the style of the connecting line can be chosen here, as different styles communicate specific meanings, e.g. thick line for strong relationship, dashed or line indicating a conflicted relationship.
+
+Five columns are needed here:
+
+1. `Relationship source` indicating _from whom_ does the relationship stem. A unique identifier is needed here, designating either a child or a grouping
+2. `Relationship destination` indicating _to whom_ the relationship points. A unique identifier is needed here, designating either a child or a grouping
+3. `Source arrow` chooses the type of arrow (if any), including the style of the connection line.
+4. `Destination arrow` chooses the type of arrow (if any), including the style of the connection line.
+5. `Relationship description` is the text to be displayed for that relationship or interaction
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Read the spreadsheet
+
+Below, we use the `XlsReader` library, creating a module (`Graphing.Spreadheet`) to handle opening the selected input file (`open_spreadsheet_file/1`). Once open, `read_all_worksheets` will read the data in all the worksheets in the spreadheet, ignoring empty rows, as well as some other data which is not valid.
+
+The last function, `get_payload/2` can be used for checking data imported from worksheets, providing the full data payload and desired worksheet.
 
 ```elixir
 defmodule Graphing.Spreadsheet do
@@ -174,11 +224,21 @@ defmodule Graphing.Spreadsheet do
 end
 ```
 
+## Define and read people
+
+Reading from such a permissive data source, as spreadsheets are, presents a source of problems. Before anything is done with the data, we want to convert it into strict Elixir structures, essentially maps, but with predefined and required fields.
+
+We define the _Person_ entity to have a unique identifier, hereafter called the `id`, a `name` holding the full person's name, and date of birth (`dob`). We also initialise a list of groupings (called a subgraph in Mermaid), to which the child may belong.
+
 ```elixir
 defmodule Person do
   defstruct id: 0, name: "", dob: "", belongs_to_subgraph: []
 end
 ```
+
+Reading the _People_ worksheet, we will rely on the `Graphing.People` module (defined below), to read and parse the children from the data. This is done with the `parse_people/1` function, which will return a list of people structures as defined previously.
+
+The remainder of the functions in this module deals with parsing the zero or more—potentially nested—groupings to which the children may belong, which will be needed when generating the peer map.
 
 ```elixir
 defmodule Graphing.People do
