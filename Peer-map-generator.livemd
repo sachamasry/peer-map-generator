@@ -116,6 +116,25 @@ Spreadsheets are a commonly-used tool, and are the simplest way for practitioner
 
 The spreadsheet has _People_ worksheet, designed to hold names of the teenagers involved—_whom_ we are including in the peer map. The next worksheet is called _Groupings_, defining any groups we want the people to be defined in, e.g. family units, gangs, locations, connected with some incident, etc. Finally, there is the _Relationships_ worksheet, defining both relationships between the adolescents, as well as connecting them in incidents known to the safeguarding practitioners. A template spreadsheet is linked to this Livebook, serving as the starting point for new peer mapping exercises.
 
+<!-- livebook:{"break_markdown":true} -->
+
+There are three specifications which are relevant to keep in the spreadsheet. The _People_ worksheet is expected to contain the following columns:
+
+1. `Reference` as the first column, serving as a unique identifier for each child
+2. `First name` and `Surname` (or `Last name`) as second and third columns; the column heading is not important
+3. `Contained by` as the fourth column, listing all the groupings in which this child will be presented in, separated by the vertical bar (`|`) symbol
+4. The child's date of birth, formatted as a proper date, as a fifth column
+
+**NOTE** Column headings are not important, as the worksheed is read and parsed based on column position. Consequently, any number of columns may be included _after_ those specified here, providing the practitionre additional information.
+
+<!-- livebook:{"break_markdown":true} -->
+
+The _Groupings_ worksheet exists to name any kind of grouping we need to place the child in: siblings, family units, gangs, affiliations, grouped by a common incident, etc. This is merely a visual aid in building the peer map. Additionally, if further clarity is needed, groups can be nested inside other groups, e.g. a gang existing within a particular area, or other delineation.
+
+1. `Reference` the first column must contain some kind of unique identifier not repeated elsewhere
+2. `Title` as the second column, naming this group
+3. `Contained by` as the third column, specifying that this group belongs within another group. If used, this needs to be the unique identifier, or reference, of the parent group.
+
 ```elixir
 defmodule Graphing.Spreadsheet do
   def open_spreadsheet_file(file_location) do
