@@ -53,6 +53,8 @@ The process begins with the creation of a complying spreadsheet, which is opened
 
 The flowchart below shows the steps in the process.
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 Kino.Mermaid.new("""
 %%{ init: { 'flowchart': { 'curve': 'cardinal' } } }%%
@@ -185,6 +187,8 @@ Below, we use the `XlsxReader` library, creating a module (`Graphing.Spreadheet`
 
 The last function, `get_payload/2` can be used for checking data imported from worksheets, providing the full data payload and desired worksheet.
 
+<!-- livebook:{"reevaluate_automatically":true} -->
+
 ```elixir
 defmodule Graphing.Spreadsheet do
   def open_spreadsheet_file(file_location) do
@@ -224,11 +228,19 @@ defmodule Graphing.Spreadsheet do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.Spreadsheet, <<70, 79, 82, 49, 0, 0, 13, ...>>, {:get_payload, 2}}
+```
+
 ## Define and read people
 
 Reading from such a permissive data source, as spreadsheets are, presents a source of problems. Before anything is done with the data, we want to convert it into strict Elixir structures, essentially maps, but with predefined and required fields.
 
 We define the _Person_ entity to have a unique identifier, hereafter called the `id`, a `name` holding the full person's name, and date of birth (`dob`). We also initialise a list of groupings (called a subgraph in Mermaid), to which the child may belong.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Person do
@@ -236,9 +248,18 @@ defmodule Person do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Person, <<70, 79, 82, 49, 0, 0, 8, ...>>,
+ %Person{id: 0, name: "", dob: "", belongs_to_subgraph: []}}
+```
+
 Reading the _People_ worksheet, we will rely on the `Graphing.People` module (defined below), to read and parse the children from the data. This is done with the `parse_people/1` function, which will return a list of people structures as defined previously.
 
 The remainder of the functions in this module deals with parsing the zero or more—potentially nested—groupings to which the children may belong, which will be needed when generating the peer map.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.People do
@@ -288,11 +309,19 @@ defmodule Graphing.People do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.People, <<70, 79, 82, 49, 0, 0, 16, ...>>, {:people_contained_by, 2}}
+```
+
 ## Define and read groupings
 
 As was done with children, we define a structure for groupings (subgraphs), strictly specifying an `id`, the grouping's unique identifier, the label for the group (`title`), a list of groupings belonging to this group—`children`, referring to _child_ subgroups, not teenagers—and a list of actual children (`people`).
 
 Please note that in the source code, we use more commonly used technical terminology, which can conflict with actual user-facing naming.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Subgraph do
@@ -300,7 +329,16 @@ defmodule Subgraph do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Subgraph, <<70, 79, 82, 49, 0, 0, 8, ...>>,
+ %Subgraph{id: 0, title: "", children: [], people: []}}
+```
+
 A dedicated module, `Graphing.SubgraphReader`, parses data from the spreadsheet's _Groupings_ worksheet, in order to get a list of top-level groupings (`top_level_subgraphs/1`), all non top-level groupings (`child_subgraphs/`), and a list of nested groups, fiven a parent grouping `id` (`subgraphs/2`).
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.SubgraphReader do
@@ -318,7 +356,15 @@ defmodule Graphing.SubgraphReader do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.SubgraphReader, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:subgraphs, 2}}
+```
+
 Then, the `Graphing.Subgraphs.Tree` module performs the actual parsing and building up of a list of strict subgraphs (`construct_subgraph_tree/2`). As groupings can be nested, the returned result will be a grouping _tree_, using the above-defined functions to iterate on each grouping from the top-level down to the last _leaf nodes_.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.Subgraphs.Tree do
@@ -373,9 +419,18 @@ defmodule Graphing.Subgraphs.Tree do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.Subgraphs.Tree, <<70, 79, 82, 49, 0, 0, 10, ...>>,
+ {:do_construct_subgraph_tree, 5}}
+```
+
 ## Define and read relationships
 
 As with the previous two entities, we will define a structure for relationships, with fields for source and destination IDs (`source_id` and `destination_id`), source and destination link types (`source_link` and `destination_link`), and the description of the relationship (`description`).
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Relationship do
@@ -387,7 +442,22 @@ defmodule Relationship do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Relationship, <<70, 79, 82, 49, 0, 0, 9, ...>>,
+ %Relationship{
+   source_id: 0,
+   source_link: :open_link,
+   destination_id: 0,
+   destination_link: :open_link,
+   description: ""
+ }}
+```
+
 The following module, `Graphing.Relationships`, reads relationship definitions, parsing from plain text to structured identifiers, such as atoms for different link types. The parsing is carried out in the `construct_relationship_tree/1` function, returning a list of relationship structures.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.Relationships do
@@ -441,11 +511,20 @@ defmodule Graphing.Relationships do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.Relationships, <<70, 79, 82, 49, 0, 0, 12, ...>>,
+ {:do_construct_relationship_tree, 2}}
+```
+
 ## Build up a tree of all parsed data
 
 With functionality in place to parse all three types of data, _People_, _Groupings_, and _Relationships_, we will construct a unified data tree representing all the parsed information. The data must be represented as a tree, as there is the possibility of nesting, where children can be placed in groups, and there any number of subgroups may be defined in the spreadsheet.
 
 The `Graphing.DataTree` module does this for us, relying on all the functions defined so far. The function `construct_graph_tree/1` returns a _map_ structure, with three top-level key values: `people`, `subgraphs` and `relationships`.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.DataTree do
@@ -471,6 +550,12 @@ defmodule Graphing.DataTree do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.DataTree, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:construct_graph_tree, 1}}
+```
+
 ## Parse the data tree, generating a Mermaid flowchart
 
 `Graphing.Mermaid` is the module which reads the well-defined Elixir data tree, converting it to Mermaid's own, text-based graph definition.
@@ -487,6 +572,8 @@ This is a larger module, effectively building the definition using the `generate
 In this module the carefully-parsed relationships, saved in the data tree as _atoms_ will now be converted to the expected dash and dot notation, needed for the desired relationship formatting. Also, the data tree itself, carefully constructed, will be flattened into a text structure. As Mermaid expects subgraph definitions to be delimited with an `end` identifier, the tree structure was needed to make this possible.
 
 Please note that, beyond relationship link types, no styling decisions are defined in the Mermaid chart, as the design of this system assumes that the Mermaid-generated chart will be used for a visual check only, and that the entire diagram will be extensively styled in Draw.io later.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 defmodule Graphing.Mermaid do
@@ -611,6 +698,13 @@ defmodule Graphing.Mermaid do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Graphing.Mermaid, <<70, 79, 82, 49, 0, 0, 29, ...>>,
+ {:generate_mermaid_subgraph_people, 1}}
+```
+
 ## The user interface
 
 As this Livebook will be deployed (locally) as a web application, we will lean on the `Kino` library to help with a simple user interface. The only interaction we need to expose is the source spreadsheet file picker, the results of which we save in the `input_spreadsheet` variable.
@@ -629,7 +723,15 @@ We will read that variable, saving its results in the `value` variable, to be us
 value = Kino.Input.read(input_spreadsheet)
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
 We present a simple set of instructions to our end users, informing them how to select the input file, and generate the diagram and definition code.
+
+<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 Kino.Markdown.new("""
@@ -648,8 +750,6 @@ At last, with all the pieces in place, and the file selected by the user, we fin
 
 The next step opens the selected spreadsheet (file), reads in all the worksheets, constructs the internal data tree, finally generating the mermaid graph definition from that tree, saving it into the `mermaid_graph` variable.
 
-<!-- livebook:{"reevaluate_automatically":true} -->
-
 ```elixir
 mermaid_graph =
   case value do
@@ -665,6 +765,12 @@ mermaid_graph =
   end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
 With the graph code generated, we pass it to `Kino` to generate and render the actual graph. Once the library generates the SVG, it will display it here, for user inspection.
 
 ```elixir
@@ -674,13 +780,17 @@ case mermaid_graph do
 end
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
 As we have the generated code in the `mermaid_graph` variable, we use it once again, this time to display the code defining the graph.
 
 Once all the data is presented in the graph above, and the user is ready to start on laying out and styling the graph, they need to copy this entire code block—presented by `Kino` as a markdown block—importing it into Draw.io.
 
 This was the entirety of the user's interaction with this web application, and the rest of their work will be carried out in Draw.io (or other diagramming software), where they will polish the diagram to a level where it communicates the relevant information to all the involved stakeholders.
-
-<!-- livebook:{"reevaluate_automatically":true} -->
 
 ```elixir
 Kino.Markdown.new(mermaid_graph)
