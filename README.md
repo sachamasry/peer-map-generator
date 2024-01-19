@@ -51,7 +51,7 @@ diagrams.
 
 The process is summarised in the following figure, describing all the steps.
 
-![Figure 1: Peer map creation process](./assets/peer-map-process-flowchart-light.svg "Figure 1: Peer map creation process")
+![Figure 1: Peer map creation process](./assets/peer-map-process-flowchart-light.png "Figure 1: Peer map creation process")
 
 ## Features
 
